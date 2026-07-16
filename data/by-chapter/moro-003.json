@@ -1,0 +1,26 @@
+{
+  "libro": "Moroni",
+  "libro_slug": "moro",
+  "capitulo": 3,
+  "titulo": "Moroni 3",
+  "sumario": "Los élderes ordenan presbíteros y maestros mediante la imposición de manos. Aproximadamente 401–421 d.C.",
+  "url": "https://www.churchofjesuschrist.org/study/scriptures/bofm/moro/3?lang=spa",
+  "versiculos": [
+    {
+      "numero": 1,
+      "texto": "La forma en que los discípulos, que eran llamados los élderes de la iglesia, ordenaban presbíteros y maestros:"
+    },
+    {
+      "numero": 2,
+      "texto": "Después de haber orado al Padre en el nombre de Cristo, les imponían las manos, y decían:"
+    },
+    {
+      "numero": 3,
+      "texto": "En el nombre de Jesucristo, te ordeno para que seas presbítero (o si fuera maestro, te ordeno para que seas maestro) para predicar el arrepentimiento y la remisión de pecados, por medio de Jesucristo, mediante la perseverancia en la fe en su nombre hasta el fin. Amén."
+    },
+    {
+      "numero": 4,
+      "texto": "Y de este modo ordenaban presbíteros y maestros, según los dones y llamamientos de Dios a los hombres; y los ordenaban por el poder del Espíritu Santo que había en ellos."
+    }
+  ]
+}

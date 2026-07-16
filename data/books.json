@@ -1,0 +1,107 @@
+[
+  {
+    "slug": "1-ne",
+    "nombre": "1 Nefi",
+    "abreviacion": "1 Ne.",
+    "orden": 1,
+    "capitulos": 22
+  },
+  {
+    "slug": "2-ne",
+    "nombre": "2 Nefi",
+    "abreviacion": "2 Ne.",
+    "orden": 2,
+    "capitulos": 33
+  },
+  {
+    "slug": "jacob",
+    "nombre": "Jacob",
+    "abreviacion": "Jacob",
+    "orden": 3,
+    "capitulos": 7
+  },
+  {
+    "slug": "enos",
+    "nombre": "Enós",
+    "abreviacion": "Enós",
+    "orden": 4,
+    "capitulos": 1
+  },
+  {
+    "slug": "jarom",
+    "nombre": "Jarom",
+    "abreviacion": "Jarom",
+    "orden": 5,
+    "capitulos": 1
+  },
+  {
+    "slug": "omni",
+    "nombre": "Omni",
+    "abreviacion": "Omni",
+    "orden": 6,
+    "capitulos": 1
+  },
+  {
+    "slug": "w-of-m",
+    "nombre": "Palabras de Mormón",
+    "abreviacion": "W de M.",
+    "orden": 7,
+    "capitulos": 1
+  },
+  {
+    "slug": "mosiah",
+    "nombre": "Mosíah",
+    "abreviacion": "Mos.",
+    "orden": 8,
+    "capitulos": 29
+  },
+  {
+    "slug": "alma",
+    "nombre": "Alma",
+    "abreviacion": "Alma",
+    "orden": 9,
+    "capitulos": 63
+  },
+  {
+    "slug": "hel",
+    "nombre": "Helamán",
+    "abreviacion": "Hel.",
+    "orden": 10,
+    "capitulos": 16
+  },
+  {
+    "slug": "3-ne",
+    "nombre": "3 Nefi",
+    "abreviacion": "3 Ne.",
+    "orden": 11,
+    "capitulos": 30
+  },
+  {
+    "slug": "4-ne",
+    "nombre": "4 Nefi",
+    "abreviacion": "4 Ne.",
+    "orden": 12,
+    "capitulos": 1
+  },
+  {
+    "slug": "morm",
+    "nombre": "Mormón",
+    "abreviacion": "Morm.",
+    "orden": 13,
+    "capitulos": 9
+  },
+  {
+    "slug": "ether",
+    "nombre": "Éter",
+    "abreviacion": "Éter",
+    "orden": 14,
+    "capitulos": 15
+  },
+  {
+    "slug": "moro",
+    "nombre": "Moroni",
+    "abreviacion": "Moro.",
+    "orden": 15,
+    "capitulos": 10
+  }
+]
