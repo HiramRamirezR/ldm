@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Cream background -->
+  <rect width="512" height="512" rx="96" fill="#f5e6c8"/>
+  <!-- Book 3D: gold pages (right and bottom edges) -->
+  <rect x="362" y="60" width="8" height="400" fill="#d4a017"/>
+  <rect x="142" y="452" width="228" height="8" fill="#d4a017"/>
+  <!-- Book cover (navy, no rounded corners) -->
+  <rect x="142" y="60" width="220" height="400" fill="#0d1b3e"/>
+  <!-- Top group: 4 thick bars (6px) -->
+  <rect x="182" y="110" width="140" height="6" rx="3" fill="#d4a017"/>
+  <rect x="172" y="136" width="160" height="6" rx="3" fill="#d4a017"/>
+  <rect x="182" y="162" width="140" height="6" rx="3" fill="#d4a017"/>
+  <rect x="172" y="188" width="160" height="6" rx="3" fill="#d4a017"/>
+  <!-- Middle group: 2 thinner bars (4px) -->
+  <rect x="192" y="240" width="120" height="4" rx="2" fill="#d4a017"/>
+  <rect x="182" y="262" width="140" height="4" rx="2" fill="#d4a017"/>
+</svg>

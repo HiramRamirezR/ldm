@@ -1,19 +1,15 @@
-const CACHE = 'ldm-v2'
-const PRECACHE = [
-  '/',
-  '/index.html',
-  '/css/style.css',
-  '/js/app.js',
-  '/js/api.js',
-  '/js/storage.js',
-  '/manifest.json'
-]
+const CACHE = 'ldm-v4'
 
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(PRECACHE))
-  )
   self.skipWaiting()
+  e.waitUntil(
+    caches.open(CACHE).then(cache => cache.addAll([
+      '/',
+      '/index.html',
+      '/manifest.json',
+      '/icon.svg'
+    ]))
+  )
 })
 
 self.addEventListener('activate', e => {
@@ -28,16 +24,15 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const { request } = e
   const url = new URL(request.url)
+  const path = url.pathname
 
-  // Cache data files (Spanish scripture JSON)
-  if (url.pathname.startsWith('/data/by-chapter/')) {
+  if (path.startsWith('/data/by-chapter/')) {
     e.respondWith(cacheFirst(request))
     return
   }
 
-  // App shell
   e.respondWith(
-    caches.match(request).then(r => r || fetch(request))
+    caches.match(request, { ignoreSearch: true }).then(r => r || fetch(request))
   )
 })
 

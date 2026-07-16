@@ -30,6 +30,8 @@ const Store = {
     const key = `${bookSlug}/${chapter}`
     if (!p.completedChapters.includes(key)) {
       p.completedChapters.push(key)
+      p.currentBook = bookSlug
+      p.currentChapter = chapter
     }
     this.saveProgress(p)
     return p
@@ -82,8 +84,8 @@ const Store = {
   getWeekStatus() {
     const s = this.getStreak()
     const dates = s.dates || []
-    const days = []
     const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+    const days = []
     for (let i = 6; i >= 0; i--) {
       const d = new Date(Date.now() - i * 86400000)
       const key = dateKey(d)
@@ -97,12 +99,46 @@ const Store = {
     return days
   },
 
-  getQuestions(chapterId) {
-    return this.get(`questions_${chapterId}`, null)
+  getBookmark() {
+    return this.get('bookmark', null)
   },
 
-  saveQuestions(chapterId, questions) {
-    this.set(`questions_${chapterId}`, questions)
+  saveBookmark(bookSlug, chapter, verse) {
+    this.set('bookmark', { bookSlug, chapter, verse })
+  },
+
+  clearBookmark() {
+    this.set('bookmark', null)
+  },
+
+  getReflections(chapterKey) {
+    return this.get(`reflections_${chapterKey}`, [])
+  },
+
+  saveReflection(chapterKey, questionIndex, text) {
+    const reflections = this.getReflections(chapterKey)
+    reflections.push({
+      questionIndex,
+      text,
+      date: dateKey(new Date()),
+      timestamp: Date.now()
+    })
+    this.set(`reflections_${chapterKey}`, reflections)
+  },
+
+  getAllReflections() {
+    const all = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith(this._prefix + 'reflections_')) {
+        const chapterKey = key.replace(this._prefix + 'reflections_', '')
+        const entries = JSON.parse(localStorage.getItem(key))
+        for (const e of entries) {
+          all.push({ chapterKey, ...e })
+        }
+      }
+    }
+    return all.sort((a, b) => b.timestamp - a.timestamp)
   }
 }
 
