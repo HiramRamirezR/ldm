@@ -1,6 +1,8 @@
 ;(function() {
   const $ = id => document.getElementById(id)
 
+  window.__LDM = {}
+
   let currentChapterData = null
   let currentBookSlug = '1-ne'
   let currentChapterNum = 1
@@ -9,22 +11,6 @@
     '¿Qué aprendiste sobre Dios o sobre Jesucristo en este capítulo?',
     'Escribe un pensamiento, impresión o algo que quieras aplicar en tu vida después de esta lectura.'
   ]
-
-  function show(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'))
-    $(id).classList.add('active')
-  }
-
-  // --- Init & Home ---
-
-  // --- Toast ---
-  function toast(msg, icon) {
-    const el = $('toast')
-    el.innerHTML = `<i class="fa-solid ${icon || 'fa-check-circle'}"></i> ${msg}`
-    el.classList.add('show')
-    clearTimeout(el._hide)
-    el._hide = setTimeout(() => el.classList.remove('show'), 2500)
-  }
 
   // --- Dark mode ---
   function updateDarkModeButtons() {
@@ -150,6 +136,9 @@
     currentBookSlug = progress.currentBook
     currentChapterNum = progress.currentChapter
 
+    window.__LDM.bookSlug = currentBookSlug
+    window.__LDM.chapterNum = currentChapterNum
+
     initSwipe()
 
     setTimeout(() => {
@@ -162,8 +151,14 @@
     const streak = Store.getStreak()
     const progress = Store.getProgress()
 
+    const prevStreak = parseInt($('streakNumber').textContent) || 0
     $('streakCount').textContent = streak.currentStreak
     $('streakNumber').textContent = streak.currentStreak
+    if (streak.currentStreak > prevStreak && prevStreak > 0) {
+      $('streakNumber').classList.remove('pop')
+      void $('streakNumber').offsetWidth
+      $('streakNumber').classList.add('pop')
+    }
 
     const weekDays = Store.getWeekStatus()
     $('weekBar').innerHTML = weekDays.map(d => `
@@ -213,6 +208,7 @@
     }
 
     show('screen-home')
+    if (window.Badges) Badges.renderHomeCard()
   }
 
   // --- Modal Selector ---
@@ -231,7 +227,8 @@
         const key = `${slug}/${i}`
         const isDone = completed.includes(key)
         const isCurrent = slug === currentBookSlug && i === currentChapterNum
-        chapters.push({ num: i, done: isDone, current: isCurrent })
+        const hasAct = Store.chapterHasActivity(slug, i)
+        chapters.push({ num: i, done: isDone, current: isCurrent, activity: hasAct })
       }
       return `
         <div class="book-item" data-slug="${slug}">
@@ -241,9 +238,9 @@
           </div>
           <div class="chapter-list">
             ${chapters.map(c => `
-              <button class="chapter-chip ${c.done ? 'done' : ''} ${c.current ? 'current' : ''}" 
+              <button class="chapter-chip ${c.done ? 'done' : ''} ${c.current ? 'current' : ''} ${c.activity ? 'has-activity' : ''}" 
                       data-slug="${slug}" data-chapter="${c.num}">
-                ${c.num}${c.done ? ' <i class="fa-solid fa-check"></i>' : ''}
+                ${c.num}${c.done ? ' <i class="fa-solid fa-check"></i>' : ''}${c.activity ? ' <i class="fa-regular fa-pen-to-square activity-icon"></i>' : ''}
               </button>
             `).join('')}
           </div>
@@ -282,22 +279,28 @@
 
   // --- Reading ---
 
-  async function startReading(scrollToBookmark) {
+  async function startReading(scrollToBookmark, scrollToVerse) {
+    window.__LDM.bookSlug = currentBookSlug
+    window.__LDM.chapterNum = currentChapterNum
     show('screen-splash')
     try {
       const data = await API.getChapter(currentBookSlug, currentChapterNum)
       currentChapterData = data
       Store.saveProgress(Store.getProgress())
-      renderChapter(data, scrollToBookmark)
+      renderChapter(data, scrollToBookmark, scrollToVerse)
     } catch (err) {
       console.error(err)
-      alert('Error al cargar el capítulo.')
+      toast('Error al cargar el capítulo. Verifica tu conexión.', 'fa-triangle-exclamation')
       show('screen-home')
     }
   }
 
+  window.startReadingAt = (verse) => {
+    startReading(false, verse)
+  }
+
   let _swipeTimer = null
-  function renderChapter(data, scrollToBookmark) {
+  function renderChapter(data, scrollToBookmark, scrollToVerse) {
     const title = data.titulo || `${API.getBookTitle(data.libro_slug)} ${data.capitulo}`
     $('chapterTitle').textContent = title
 
@@ -333,11 +336,17 @@
     show('screen-reading')
 
     const content = $('readingContent')
+    content.scrollTop = 0
     content.removeEventListener('scroll', updateReadProgress)
     content.addEventListener('scroll', updateReadProgress)
     updateReadProgress()
 
     $('btnFinishReading').disabled = false
+
+    // Apply highlights
+    if (window.Highlights) {
+      Highlights.applyHighlights(data)
+    }
 
     if (scrollToBookmark && isBookmarkedHere) {
       setTimeout(() => {
@@ -348,6 +357,13 @@
           setTimeout(() => target.classList.remove('highlight'), 2000)
         }
       }, 300)
+    }
+
+    if (scrollToVerse) {
+      setTimeout(() => {
+        const target = content.querySelector(`[data-verse="${scrollToVerse}"]`)
+        if (target) target.scrollIntoView({ block: 'center' })
+      }, 400)
     }
   }
 
@@ -402,19 +418,31 @@
     }
   }
 
+  let _finishing = false
   function finishReading() {
+    if (_finishing) return
+    _finishing = true
+    $('btnFinishReading').disabled = true
     const s = Store.updateStreak()
     Store.completeChapter(currentBookSlug, currentChapterNum)
     Store.clearBookmark()
+    AudioFX.complete()
     toast('Cap&iacute;tulo completado', 'fa-check-circle')
+    // Check badges after chapter completion
+    if (window.Badges) {
+      const newBadges = Badges.checkAll()
+      if (newBadges.length > 0) AudioFX.badge()
+      else AudioFX.streak()
+    }
     showReflection()
+    setTimeout(() => { _finishing = false }, 1000)
   }
 
   // --- Reflection ---
 
   function showReflection() {
     const data = currentChapterData
-    if (!data) { showHome(); return }
+    if (!data) { renderHome(); return }
 
     const chapterLabel = `${API.getBookTitle(data.libro_slug)} ${data.capitulo}`
     $('reflectionTitle').textContent = chapterLabel
@@ -507,6 +535,49 @@
 
   // --- Journal ---
 
+  function showJournalEditModal(chapterKey, timestamp, currentText) {
+    const existing = document.getElementById('journalEditModal')
+    if (existing) existing.remove()
+
+    const overlay = document.createElement('div')
+    overlay.id = 'journalEditModal'
+    overlay.className = 'journal-edit-overlay'
+    const content = document.createElement('div')
+    content.className = 'journal-edit-content'
+    content.innerHTML = `
+      <div class="journal-edit-title">Editar reflexión</div>
+      <textarea class="journal-edit-textarea" rows="5"></textarea>
+      <div class="journal-edit-actions">
+        <button class="journal-edit-cancel">Cancelar</button>
+        <button class="journal-edit-save">Guardar</button>
+      </div>
+    `
+    content.querySelector('textarea').value = currentText
+    overlay.appendChild(content)
+
+    document.getElementById('app').appendChild(overlay)
+    overlay.style.display = 'flex'
+
+    const textarea = overlay.querySelector('textarea')
+    textarea.focus()
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length)
+
+    overlay.querySelector('.journal-edit-cancel').onclick = () => overlay.remove()
+    overlay.querySelector('.journal-edit-save').onclick = () => {
+      const newText = textarea.value.trim()
+      if (!newText) return
+      Store.editReflection(chapterKey, timestamp, newText)
+      overlay.remove()
+      openJournal()
+      toast('Reflexión actualizada', 'fa-pen-to-square')
+    }
+
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.remove() }
+
+    const keydown = (e) => { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', keydown) } }
+    document.addEventListener('keydown', keydown)
+  }
+
   function openJournal() {
     const reflections = Store.getAllReflections()
     if (reflections.length === 0) {
@@ -516,15 +587,46 @@
         const [slug, ch] = r.chapterKey.split('/')
         const label = `${API.getBookTitle(slug)} ${ch}`
         const qText = REFLECTION_QUESTIONS[r.questionIndex] || ''
-        return `<div class="journal-entry">
+        return `<div class="journal-entry" data-key="${r.chapterKey}" data-ts="${r.timestamp}">
           <div class="entry-header">
             <span class="entry-title">${label}</span>
             <span>${r.date}</span>
           </div>
           <div style="font-size:13px;color:var(--text-light);margin-bottom:6px;">${qText}</div>
           <div class="entry-answer">${r.text}</div>
+          <div class="journal-entry-actions">
+            <button class="journal-edit-btn" title="Editar"><i class="fa-solid fa-pen"></i> Editar</button>
+            <button class="journal-delete-btn" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>
+          </div>
         </div>`
       }).join('')
+
+      // Bind edit buttons
+      $('journalList').querySelectorAll('.journal-edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation()
+          const entry = btn.closest('.journal-entry')
+          const key = entry.dataset.key
+          const ts = parseInt(entry.dataset.ts)
+          const currentText = entry.querySelector('.entry-answer').textContent
+          showJournalEditModal(key, ts, currentText)
+        })
+      })
+
+      // Bind delete buttons
+      $('journalList').querySelectorAll('.journal-delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation()
+          const entry = btn.closest('.journal-entry')
+          const key = entry.dataset.key
+          const ts = parseInt(entry.dataset.ts)
+          if (confirm('¿Eliminar esta reflexión?')) {
+            Store.deleteReflection(key, ts)
+            openJournal()
+            toast('Reflexión eliminada', 'fa-trash-can')
+          }
+        })
+      })
     }
     show('screen-journal')
   }
@@ -553,5 +655,20 @@
     $('btnShare').addEventListener('click', shareChapter)
     $('btnShareReading').addEventListener('click', shareChapter)
     $('btnInstall').addEventListener('click', installApp)
+
+    $('btnStudy').addEventListener('click', () => {
+      if (window.Highlights) Highlights.openStudyView('highlights')
+    })
+
+    // Sound toggle
+    const soundBtn = $('btnSound')
+    if (soundBtn) {
+      soundBtn.innerHTML = AudioFX.isMuted() ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>'
+      soundBtn.addEventListener('click', () => {
+        const nowOn = AudioFX.toggle()
+        soundBtn.innerHTML = nowOn ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>'
+        toast(nowOn ? 'Sonido activado' : 'Sonido silenciado', nowOn ? 'fa-volume-high' : 'fa-volume-xmark')
+      })
+    }
   })
 })()

@@ -1,4 +1,4 @@
-const CACHE = 'ldm-v4'
+const CACHE = 'ldm-v5'
 
 self.addEventListener('install', e => {
   self.skipWaiting()
@@ -7,7 +7,15 @@ self.addEventListener('install', e => {
       '/',
       '/index.html',
       '/manifest.json',
-      '/icon.svg'
+      '/icon.svg',
+      '/js/confetti.min.js',
+      '/js/storage.js',
+      '/js/api.js',
+      '/js/audio.js',
+      '/js/badges.js',
+      '/js/highlights.js',
+      '/js/app.js',
+      '/css/style.css'
     ]))
   )
 })

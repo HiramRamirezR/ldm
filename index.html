@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0d1b3e">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -17,11 +17,11 @@
   <meta name="twitter:title" content="LdM Diario">
   <meta name="twitter:description" content="Crea el hábito de leer el Libro de Mormón cada día.">
 
-  <link rel="manifest" href="manifest.json?v=3">
+  <link rel="manifest" href="manifest.json?v=5">
   <link rel="icon" href="icon.svg">
   <title>LdM Diario</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="css/style.css?v=3">
+  <link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
   <div id="app">
@@ -39,6 +39,7 @@
     <div id="screen-home" class="screen">
       <header class="top-bar">
         <div class="logo-small"><i class="fa-solid fa-book-open"></i> LdM</div>
+        <button class="btn-darkmode" id="btnSound" title="Sonido"><i class="fa-solid fa-volume-high"></i></button>
         <button class="btn-darkmode" id="btnDarkMode" title="Modo oscuro"><i class="fa-regular fa-moon"></i></button>
         <div class="streak-badge" id="streakBadge">
           <i class="fa-solid fa-fire"></i>
@@ -85,7 +86,10 @@
           <span class="change-badge"><i class="fa-solid fa-arrow-right"></i> Cambiar</span>
         </div>
 
+        <div class="badge-home-card" id="badgeHomeCard"></div>
+
         <div class="home-actions">
+          <button class="btn-secondary" id="btnStudy"><i class="fa-solid fa-highlighter"></i> Mi Estudio Personal</button>
           <button class="btn-secondary" id="btnJournal"><i class="fa-solid fa-book"></i> Mi Diario</button>
           <button class="btn-install" id="btnInstall" style="display:none"><i class="fa-solid fa-download"></i> Instalar App</button>
         </div>
@@ -108,6 +112,7 @@
       <header class="top-bar">
         <button class="btn-icon" id="btnBackReading"><i class="fa-solid fa-arrow-left"></i></button>
         <span class="chapter-title" id="chapterTitle">1 Nefi 1</span>
+        <span id="chapterActivityBadge" class="chapter-activity-badge" style="display:none"><i class="fa-regular fa-pen-to-square"></i></span>
         <button class="btn-darkmode" id="btnDarkModeReading" title="Modo oscuro"><i class="fa-regular fa-moon"></i></button>
         <div class="font-size-controls">
           <button class="btn-font" id="btnFontDown">A-</button>
@@ -119,6 +124,33 @@
       <div class="reading-content" id="readingContent">
         <div class="chapter-summary" id="chapterSummary"></div>
         <div class="verses" id="verses"></div>
+      </div>
+
+      <!-- Highlight Context Menu -->
+      <div id="hlMenu" class="hl-menu">
+        <div class="hl-menu-header" id="hlMenuLabel">Subrayar</div>
+        <div class="hl-menu-row">
+          <button class="hl-color" data-color="yellow" style="background:#fff3b0"></button>
+          <button class="hl-color" data-color="green" style="background:#b5e6b5"></button>
+          <button class="hl-color" data-color="purple" style="background:#d4b8f5"></button>
+          <button class="hl-color" data-color="pink" style="background:#fbc4c4"></button>
+          <button class="hl-color" data-color="blue" style="background:#b5d6f5"></button>
+          <button class="hl-color" data-color="orange" style="background:#fdd9a0"></button>
+        </div>
+        <div class="hl-menu-actions">
+          <button class="hl-menu-btn" id="hlRemoveBtn" style="display:none"><i class="fa-solid fa-eraser"></i> Quitar</button>
+          <button class="hl-menu-btn" id="hlMenuClose"><i class="fa-solid fa-xmark"></i> Cerrar</button>
+        </div>
+      </div>
+
+      <!-- Tag Modal -->
+      <div id="hlTagModal" class="hl-tag-modal">
+        <div class="hl-tag-content">
+          <div class="hl-tag-title" id="hlTagModalTitle">Etiquetas</div>
+          <div class="hl-tag-list" id="hlTagList"></div>
+          <input class="hl-tag-input" id="hlTagInput" placeholder="Nueva etiqueta...">
+          <button class="hl-tag-done" id="hlTagDone">Listo</button>
+        </div>
       </div>
 
       <div class="reading-footer">
@@ -177,11 +209,46 @@
       </header>
       <div class="reflection-content" id="journalList"></div>
     </div>
+
+    <!-- Mi Estudio Personal -->
+    <div id="screen-study" class="screen">
+      <header class="top-bar">
+        <button class="btn-icon" id="btnStudyBack"><i class="fa-solid fa-arrow-left"></i></button>
+        <span><i class="fa-solid fa-highlighter"></i> Mi Estudio Personal</span>
+        <div class="spacer"></div>
+      </header>
+      <div class="study-content">
+        <div class="study-tabs" id="studyTabs">
+          <button class="study-tab active" data-tab="highlights"><i class="fa-solid fa-pen"></i> Subrayados</button>
+          <button class="study-tab" data-tab="threads"><i class="fa-solid fa-link"></i> Hilos</button>
+        </div>
+        <div class="study-tags" id="studyTags"></div>
+        <div class="study-list" id="studyList"></div>
+      </div>
+    </div>
+
+    <!-- Thread Detail -->
+    <div id="screen-thread" class="screen">
+      <header class="top-bar">
+        <button class="btn-icon" id="btnThreadBack"><i class="fa-solid fa-arrow-left"></i></button>
+        <span class="chapter-title" id="threadTitle">Hilo</span>
+        <div class="spacer"></div>
+      </header>
+      <div class="thread-content" id="threadContent"></div>
+    </div>
+
     <div id="toast"></div>
+
+    <!-- Badge Modal Grid -->
+    <div id="badgeOverlay" class="badge-overlay"></div>
   </div>
 
-  <script src="js/storage.js?v=3"></script>
-  <script src="js/api.js?v=3"></script>
-  <script src="js/app.js?v=3"></script>
+  <script src="js/confetti.min.js?v=5"></script>
+  <script src="js/storage.js?v=5"></script>
+  <script src="js/api.js?v=5"></script>
+  <script src="js/audio.js?v=5"></script>
+  <script src="js/badges.js?v=5"></script>
+  <script src="js/highlights.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
 </body>
 </html>
