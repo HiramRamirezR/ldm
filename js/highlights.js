@@ -279,13 +279,36 @@
     // Desktop: mouseup to catch selection immediately
     versesEl.addEventListener('mouseup', onMouseUp)
 
-    // Double-tap for full-verse (works on mobile too)
+    // Mobile: touchend to catch text selection immediately after gesture ends
+    versesEl.addEventListener('touchend', onTouchEnd)
+
+    // Double-tap tracking (using both touch and click)
+    let touchTapTime = 0
+    let touchTapVerse = null
+    versesEl.addEventListener('touchstart', (e) => {
+      const verse = e.target.closest('.verse')
+      if (!verse) return
+      const now = Date.now()
+      if (touchTapVerse === verse && now - touchTapTime < 350) {
+        // Double-tap on same verse (mobile)
+        clearTimeout(selDebounce)
+        window.getSelection().removeAllRanges()
+        const vNum = parseInt(verse.dataset.verse)
+        showMenu('verse', verse, vNum)
+        touchTapTime = 0
+        touchTapVerse = null
+        return
+      }
+      touchTapTime = now
+      touchTapVerse = verse
+    }, { passive: true })
+
     versesEl.addEventListener('click', (e) => {
       const verse = e.target.closest('.verse')
       if (!verse) return
       const now = Date.now()
       if (lastTapVerse === verse && now - lastTapTime < 350) {
-        // Double-tap on same verse
+        // Double-click on same verse (desktop)
         clearTimeout(selDebounce)
         window.getSelection().removeAllRanges()
         const vNum = parseInt(verse.dataset.verse)
@@ -320,6 +343,22 @@
     }
   }
 
+  function onTouchEnd() {
+    // On mobile, check for selection immediately after touch ends
+    setTimeout(() => {
+      const sel = window.getSelection()
+      if (sel && !sel.isCollapsed && sel.toString().trim()) {
+        const verseEl = sel.anchorNode?.closest?.('.verse') || sel.focusNode?.closest?.('.verse')
+        if (verseEl && document.getElementById('verses')?.contains(verseEl)) {
+          if ($('hlMenu').style.display === 'flex') return
+          if ($('hlTagModal').style.display === 'flex') return
+          clearTimeout(selDebounce)
+          handleTextSelection(sel)
+        }
+      }
+    }, 50)
+  }
+
   let selDebounce = null
   function onSelectionChange() {
     clearTimeout(selDebounce)
@@ -336,7 +375,7 @@
       if (!document.getElementById('verses')?.contains(verseEl)) return
 
       handleTextSelection(sel)
-    }, 200)
+    }, 100)
   }
 
   function handleTextSelection(sel) {
@@ -488,6 +527,7 @@
     filterTag = null
     renderStudyView(tab || 'highlights')
     show('screen-study')
+    history.pushState({ screen: 'screen-study' }, '')
   }
 
   function renderStudyView(tab) {
@@ -864,6 +904,7 @@
     })
 
     show('screen-thread')
+    history.pushState({ screen: 'screen-thread' }, '')
   }
 
   // ========================

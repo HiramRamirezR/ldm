@@ -62,12 +62,23 @@
 
   // --- Swipe navigation ---
   let touchStartX = 0
+  let touchStartY = 0
   function initSwipe() {
     const el = $('readingContent')
-    el.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX }, { passive: true })
+    el.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX
+      touchStartY = e.changedTouches[0].screenY
+    }, { passive: true })
     el.addEventListener('touchend', e => {
+      // Don't navigate if user has selected text (trying to highlight)
+      const sel = window.getSelection()
+      if (sel && !sel.isCollapsed && sel.toString().trim().length > 0) return
+
       const dx = e.changedTouches[0].screenX - touchStartX
+      const dy = Math.abs(e.changedTouches[0].screenY - touchStartY)
+      // Only navigate if horizontal movement dominates vertical (not a scroll)
       if (Math.abs(dx) < 50) return
+      if (Math.abs(dx) < dy * 1.5) return
       if (dx > 0) navigateChapter(-1)
       else navigateChapter(1)
     }, { passive: true })
@@ -122,6 +133,33 @@
     deferredPrompt.userChoice.then(() => { deferredPrompt = null; $('btnInstall').style.display = 'none' })
   }
 
+  function handleBack() {
+    const active = document.querySelector('.screen.active')
+    if (!active) { window.history.back(); return }
+
+    const screensToActions = {
+      'screen-home': () => { /* already on home, do nothing */ },
+      'screen-splash': () => { /* ignore splash state */ },
+      'screen-reading': () => renderHome(),
+      'screen-journal': () => renderHome(),
+      'screen-study': () => show('screen-home'),
+      'screen-thread': () => { if (window.Highlights) Highlights.openStudyView('threads') },
+      'screen-reflection': () => renderHome(),
+      'screen-results': () => renderHome()
+    }
+    const action = screensToActions[active.id]
+    if (action) {
+      action()
+    } else {
+      window.history.back()
+    }
+  }
+
+  function pushScreenState(screenId) {
+    if (!screenId || screenId === 'screen-splash') return
+    history.pushState({ screen: screenId }, '')
+  }
+
   function init() {
     show('screen-splash')
 
@@ -140,6 +178,10 @@
     window.__LDM.chapterNum = currentChapterNum
 
     initSwipe()
+
+    // Create initial history entry so native back doesn't exit the app
+    history.pushState({ screen: 'splash' }, '')
+    window.addEventListener('popstate', handleBack)
 
     setTimeout(() => {
       show('screen-home')
@@ -334,6 +376,7 @@
 
     $('readingProgress').style.width = '0%'
     show('screen-reading')
+    pushScreenState('screen-reading')
 
     const content = $('readingContent')
     content.scrollTop = 0
@@ -480,6 +523,7 @@
     })
 
     show('screen-reflection')
+    pushScreenState('screen-reflection')
   }
 
   function finishReflection() {
@@ -515,6 +559,7 @@
     }
 
     show('screen-results')
+    pushScreenState('screen-results')
   }
 
   function getNextChapter(progress) {
@@ -629,6 +674,7 @@
       })
     }
     show('screen-journal')
+    pushScreenState('screen-journal')
   }
 
   // --- Init ---

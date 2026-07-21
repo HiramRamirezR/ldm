@@ -357,8 +357,74 @@ html[data-theme="dark"] .btn-bookmark.active {
   color: var(--navy);
   border-color: var(--gold);
 }
+html[data-theme="dark"] .hl-color {
+  border-color: rgba(255,255,255,0.4);
+}
 html[data-theme="dark"] .btn-icon {
   color: #fff;
+}
+html[data-theme="dark"] .book-header {
+  color: var(--gold);
+}
+html[data-theme="dark"] .book-header:active {
+  background: rgba(255,255,255,0.05);
+}
+html[data-theme="dark"] .modal-header h2,
+html[data-theme="dark"] .badge-modal-header h2 {
+  color: var(--gold);
+}
+html[data-theme="dark"] .badge-name,
+html[data-theme="dark"] .badge-home-header {
+  color: var(--gold);
+}
+html[data-theme="dark"] .journal-entry .entry-title,
+html[data-theme="dark"] .journal-edit-title,
+html[data-theme="dark"] .hl-tag-title {
+  color: var(--gold);
+}
+html[data-theme="dark"] .reflection-header h2 {
+  color: var(--gold);
+}
+html[data-theme="dark"] .study-item-ref {
+  color: var(--gold);
+}
+html[data-theme="dark"] .thread-card-name {
+  color: var(--gold);
+}
+html[data-theme="dark"] .thread-entry-ref {
+  color: var(--gold);
+}
+html[data-theme="dark"] .question-text {
+  color: var(--gold);
+}
+html[data-theme="dark"] .results-title {
+  color: var(--gold);
+}
+html[data-theme="dark"] .study-tab.active {
+  color: var(--gold);
+}
+html[data-theme="dark"] .thread-select-item {
+  color: var(--text);
+}
+html[data-theme="dark"] .chapter-chip.done {
+  color: var(--gold);
+  background: rgba(212,160,23,0.15);
+}
+html[data-theme="dark"] .bookmark-alert .alert-text,
+html[data-theme="dark"] .bookmark-alert .alert-arrow {
+  color: var(--gold);
+}
+html[data-theme="dark"] .bookmark-alert {
+  background: rgba(10,15,30,0.8);
+  border-left-color: var(--gold);
+}
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] .reflection-card textarea,
+html[data-theme="dark"] .journal-edit-textarea,
+html[data-theme="dark"] .hl-tag-input {
+  background: #222;
+  color: var(--text);
+  border-color: #555;
 }
 
 .btn-primary:disabled {
@@ -1378,12 +1444,12 @@ html[data-theme="dark"] .btn-icon {
 }
 
 html[data-theme="dark"] {
-  --hl-yellow: #4a3f00;
-  --hl-green: #143014;
-  --hl-purple: #2d1a4a;
-  --hl-pink: #3d0a22;
-  --hl-blue: #0a1e3d;
-  --hl-orange: #3d1c00;
+  --hl-yellow: #665500;
+  --hl-green: #1a4a1a;
+  --hl-purple: #4a1a6a;
+  --hl-pink: #5a1a30;
+  --hl-blue: #1a2a5a;
+  --hl-orange: #5a2a00;
 }
 
 /* ===== Inline highlight marks ===== */
