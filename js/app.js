@@ -359,6 +359,12 @@
       $('chapterSummary').style.display = 'none'
     }
 
+    // Show "Leído" badge if this chapter was already completed
+    const completedChapters = Store.getProgress().completedChapters
+    const isRead = completedChapters.includes(`${data.libro_slug}/${data.capitulo}`)
+    const readBadge = $('chapterReadBadge')
+    if (readBadge) readBadge.style.display = isRead ? 'inline-flex' : 'none'
+
     const bookmark = Store.getBookmark()
     const isBookmarkedHere = bookmark && bookmark.bookSlug === data.libro_slug && bookmark.chapter === data.capitulo
 

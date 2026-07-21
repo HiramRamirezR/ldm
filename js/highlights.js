@@ -45,10 +45,21 @@
   function renderVerseHighlights(verseEl) {
     const verseNum = parseInt(verseEl.dataset.verse)
     const vh = currentHighlights.filter(h => h.verseNum === verseNum)
-    if (vh.length === 0) return
+
+    // Always clean up full-verse highlight classes first
+    COLORS.forEach(c => verseEl.classList.remove('hl-full-' + c.id))
+
+    if (vh.length === 0) {
+      // No highlights at all — restore original text without mark tags
+      const numSpan = verseEl.querySelector('.verse-num')
+      const raw = getVerseRawText(verseEl)
+      const numLen = numSpan ? numSpan.textContent.length : 0
+      const textOnly = raw.substring(numLen)
+      verseEl.innerHTML = (numSpan ? numSpan.outerHTML : '') + escHtml(textOnly)
+      return
+    }
 
     const fullHl = vh.find(h => h.startOffset === null)
-    COLORS.forEach(c => verseEl.classList.remove('hl-full-' + c.id))
     if (fullHl) verseEl.classList.add('hl-full-' + fullHl.color)
 
     const textHls = vh.filter(h => h.startOffset !== null).sort((a, b) => a.startOffset - b.startOffset)
@@ -509,13 +520,13 @@
         if (hlId) showTagPrompt(hlId)
         return
       }
-      // Tap on already-highlighted verse → tag prompt
+      // Tap on already-highlighted verse → show color menu (with Quitar)
       const verse = e.target.closest('.verse')
       if (!verse) return
       const vNum = parseInt(verse.dataset.verse)
       const fullHl = currentHighlights.find(h => h.verseNum === vNum && h.startOffset === null)
       if (!fullHl) return
-      showTagPrompt(fullHl.id)
+      showMenu('verse', verse, vNum)
     })
   }
 

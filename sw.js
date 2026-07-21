@@ -1,4 +1,4 @@
-const CACHE = 'ldm-v1'
+const CACHE = 'ldm-v2'
 
 self.addEventListener('install', e => {
   self.skipWaiting()
